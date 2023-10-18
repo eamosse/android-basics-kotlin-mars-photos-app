@@ -31,6 +31,14 @@ class OverviewFragment : Fragment() {
 
     private val viewModel: OverviewViewModel by viewModels()
 
+    private val binding: FragmentOverviewBinding by lazy {
+        FragmentOverviewBinding.inflate(layoutInflater)
+    }
+
+    private val adapter: PhotoGridAdapter by lazy {
+        PhotoGridAdapter()
+    }
+
     /**
      * Inflates the layout with Data Binding, sets its lifecycle owner to the OverviewFragment
      * to enable Data Binding to observe LiveData, and sets up the RecyclerView with an adapter.
@@ -38,18 +46,20 @@ class OverviewFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val binding = FragmentOverviewBinding.inflate(inflater)
+    ): View {
+        return binding.root.apply {
+            binding.photosGrid.adapter = adapter
+        }
+    }
 
-        // Allows Data Binding to Observe LiveData with the lifecycle of this Fragment
-        binding.lifecycleOwner = this
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        with(viewModel) {
+            photos.observe(viewLifecycleOwner) {
+                adapter.submitList(it)
+            }
 
-        // Giving the binding access to the OverviewViewModel
-        binding.viewModel = viewModel
-
-        // Sets the adapter of the photosGrid RecyclerView
-        binding.photosGrid.adapter = PhotoGridAdapter()
-
-        return binding.root
+            // TODO Mettre à jour la vue en cas d'erreur
+        }
     }
 }
